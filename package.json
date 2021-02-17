@@ -1,0 +1,25 @@
+{
+  "name": "@atimermann/smodel",
+  "version": "0.0.1",
+  "description": "Classe para implementação de modelos de dado orientado a objeto",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atimermann/smodel.git"
+  },
+  "keywords": [
+    "model"
+  ],
+  "author": "André Timermann <andre@timermann.com.br> (http://andre.timermann.com.br)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/atimermann/smodel/issues"
+  },
+  "homepage": "https://github.com/atimermann/smodel#readme"
+}
