@@ -1,6 +1,6 @@
 {
   "name": "@atimermann/smodel",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Classe para implementação de modelos de dado orientado a objeto",
   "main": "index.js",
   "directories": {
