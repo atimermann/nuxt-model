@@ -8,15 +8,18 @@
 
 'use strict'
 
-import Model from '@atimermann/smodel'
-import TesteModel from '~/models/teste.model'
+import Model from '@atimermann/nuxt-model'
 
 export default class SubTesteModel extends Model {
-  static __class = 'SubTesteModel'
-  static nameType = TesteModel
+  static nameType = 'TesteModel[]'
+  static idType = 'number'
 
   /**
-   * @type {SubTesteModel}
+   * @type {number}
    */
-  teste
+  id
+
+  get isStatic () {
+    return Model.context.isStatic + this.id
+  }
 }

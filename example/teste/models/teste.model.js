@@ -8,12 +8,11 @@
 
 'use strict'
 
-import Model from '@atimermann/smodel'
-import SubTesteModel from '~/models/sub-teste.model'
+import Model from '@atimermann/nuxt-model'
 
 export default class TesteModel extends Model {
-  static __class = 'TesteModel'
-  static nameType = SubTesteModel
+  static nameType = 'SubTesteModel'
+  static idType = 'number'
 
   id = '123'
 

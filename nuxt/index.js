@@ -4,20 +4,27 @@
  * src/index.js
  * @author André Timermann <andre@timermann.com.br>
  *
- *   Entry Point do modulo no Nuxt
+ *  Módulo para ser carregado no Nuxt
  *
  */
 'use strict'
 
 import path from 'path'
+import { defaults } from 'lodash'
 
-export default function NuxtSModelModule(optionsModule) {
+export default function NuxtModelModule (optionsModule) {
   this.addPlugin(
     {
-      src: path.resolve(__dirname, '..', 'src', 'plugin.js'),
-      options: {
-        importPath: optionsModule.importPath || '~/models/${modelName}.model.js'
-      }
+      src: path.resolve(__dirname, '..', 'src', 'plugin.js.tpl'),
+      options: defaults(
+        {
+          importPath: '~/models/${modelName}.model.js',
+          enableConstructorName: true,
+          fileCaseStyle: 'kebabCase'
+          // Novos atributos devem ser configurados aqui, em plugins.js.tpl e no contrutor do model.js
+        },
+        optionsModule
+      )
     }
   )
 

@@ -32,7 +32,20 @@ export default {
   async mounted () {
     await this.$nextTick()
 
-    this.teste = Teste.create({})
+    this.teste = await Teste.create({
+      id: 1,
+      name: {
+        id: 2,
+        name: [{
+          id: 3
+        }, {
+          id: 4
+        }]
+      }
+    })
+
+    // console.log('FINAL', this.teste.toJSON())
+    // console.log('FINAL', '= ' + this.teste)
   }
 
 }

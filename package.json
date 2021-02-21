@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/atimermann/smodel.git"
+    "url": "git+https://github.com:atimermann/nuxt-model.git"
   },
   "keywords": [
     "model"
@@ -19,10 +19,12 @@
   "author": "André Timermann <andre@timermann.com.br> (http://andre.timermann.com.br)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/atimermann/smodel/issues"
+    "url": "https://github.com:atimermann/nuxt-model/issues"
   },
-  "homepage": "https://github.com/atimermann/smodel#readme",
-  "dependencies": {},
+  "homepage": "https://github.com:atimermann/nuxt-model#readme",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
   "devDependencies": {
     "typescript": "^4.1.5"
   }
