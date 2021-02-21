@@ -1,0 +1,25 @@
+{
+  "include": [
+    "src/**/*"
+  ],
+  "compilerOptions": {
+    // Altera o formato do arquivo de saída, navegadores modernos suportam ES6
+    "target": "ES6",
+    // Altera o sistema de carregamento de módulo do arquivo de saída
+    // https://www.typescriptlang.org/pt/tsconfig#module
+    "module": "ES6",
+    // Sistema de resolução de modulos no arquivo fonte (entrada) .ts. Módo de busca
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "sourceMap": true,
+    "alwaysStrict": true,
+    "noImplicitAny": false,
+    "removeComments": true,
+    //  Analise de arquivos javascript
+    "allowJs": true,
+    "declaration": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
