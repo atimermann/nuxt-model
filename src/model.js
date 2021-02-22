@@ -24,19 +24,116 @@ export default class Model {
 
   /**
    * Objeto de contexto do Nuxt
-   * @type {Vue}
+   * @type {any}
    */
   static context = null
+
+  /**
+   * Opções do Nuxt App
+   * As opções da instância raiz do Vue que incluem todos os seus plugins. Por exemplo, ao usar i18n, você pode obter acesso o $i18n através de context.app.i18n.
+   *
+   * @type {Vue}
+   */
+  static app = null
+  /**
+   * Store do Vuex
+   * Instância da Store do Vuex. Disponível apenas se a store do vuex estiver definido.
+   *
+   * @type {Store}
+   */
+  static store = null
+  /**
+   * Alias do route.params.
+   *
+   * @type {Route}
+   */
+  static route = null
+  /**
+   * Alias do route.params.
+   *
+   * @type {object}
+   */
+  static params = null
+  /**
+   * Alias do route.query.
+   * @type {object}
+   */
+  static query = null
+  /**
+   * Variáveis de ambiente definidas em nuxt.config.js, consulte a api env.
+   * @type {object}
+   */
+  static env = null
+  /**
+   * Booleano para que você saiba se está no modo dev, pode ser útil para armazenar alguns dados em produção.
+   *
+   * @type {boolean}
+   */
+  static isDev = null
+  /**
+   * Booleano para que você saiba se o método/middleware é chamado a partir da substituição do módulo ativo
+   * -- hot module replacement -- do webpack (verdadeiro apenas no lado do cliente, no modo dev).
+   * @type {boolean}
+   */
+  static isHMR = null
+  /**
+   * Use este método para redirecionar o usuário para outra rota, o código de status é usado no lado do servidor,
+   * o padrão é 302. redirect([status,] path [, query]).
+   * @type {function}
+   */
+  static redirect = null
+  /**
+   * Use este método para mostrar a página de erro: error(params). Os params devem ter as propriedades statusCode e
+   * message.
+   *
+   * @type {function}
+   */
+  static error = null
+  /**
+   * Essa é a configuração do tempo de execução (runtime config).
+   * Ref: https://pt.nuxtjs.org/docs/2.x/configuration-glossary/configuration-runtime-config
+   * @type {Object}
+   */
+  static $config = null
+
+  /**
+   * A rota de onde foi navegado.
+   * @type {Route}
+   */
+  static from = null
+
+  /**
+   * Útil para plugins que usam beforeNuxtRender para obter o nuxtState no lado do cliente antes da hidratação.
+   * Disponível apenas no modo universal.
+   * @type {Object}
+   */
+  static nuxtState = null
 
   /**
    * Configurção da classe, usado na inicialização do nuxt
    * @param options
    */
   static configure (options) {
-    Model.context = options.context
     Model.loadModelModule = options.loadModelModuleFunction
     Model.enableConstructorName = options.enableConstructorName
     Model.fileCaseStyle = options.fileCaseStyle
+
+    // Context Attributes. Ref: https://nuxtjs.org/docs/2.x/internals-glossary/context
+    Model.context = options.context
+    Model.app = Model.context.app
+    Model.store = Model.context.store
+    Model.route = Model.context.route
+    Model.params = Model.context.params
+    Model.query = Model.context.query
+    Model.env = Model.context.env
+    Model.isDev = Model.context.isDev
+    Model.isHMR = Model.context.isHMR
+    Model.redirect = Model.context.redirect
+    Model.error = Model.context.error
+    Model.$config = Model.context.$config
+    Model.from = Model.context.from
+    Model.nuxtState = Model.context.nuxtState
+
   }
 
   /**
@@ -49,15 +146,15 @@ export default class Model {
    */
   static async create (data) {
     if (!data) {
-      throw new Error('Data cannot be null or undefined when creating a model.')
+      throw new Error(`[${this.getClassName()}] Data cannot be null or undefined when creating a model.`)
     }
 
     if (Array.isArray(data)) {
-      throw new TypeError('Array is not allowed. To create collections use createCollection.')
+      throw new TypeError(`[${this.getClassName()}] Array is not allowed. To create collections use createCollection.`)
     }
 
     if (!isPlainObject(data)) {
-      throw new TypeError(`Date attribute must be a plain object. ("${JSON.stringify(data)}")`)
+      throw new TypeError(`[${this.getClassName()}] Date attribute must be a plain object. ("${JSON.stringify(data)}")`)
     }
 
     const Class = this
@@ -75,11 +172,11 @@ export default class Model {
         throw new Error(`There is no attribute "${attrName}" in class "${this.getClassName()}"`)
       }
 
-      if (value === null || value === undefined){
+      if (value === null || value === undefined) {
         continue
       }
 
-     if (attrType.substr(-2) === '[]') {
+      if (attrType.substr(-2) === '[]') {
         await this._createCollectionAttribute(instance, attrType, attrName, value)
       } else if (attrType.substr(-5) === 'Model') {
         const subClassInstance = await this._createSubModelAttribute(instance, attrType, attrName, value)
