@@ -6,7 +6,7 @@
  *
  */
 
-import { camelCase, cloneDeep, isPlainObject, kebabCase, snakeCase } from 'lodash'
+import { camelCase, isPlainObject, kebabCase, snakeCase } from 'lodash'
 
 export default class Model {
   /**
@@ -24,7 +24,7 @@ export default class Model {
 
   /**
    * Objeto de contexto do Nuxt
-   * @type {null}
+   * @type {Vue}
    */
   static context = null
 
@@ -65,12 +65,11 @@ export default class Model {
 
     for (const [attrName, value] of Object.entries(data)) {
 
-      if (attrName.substr(0,1) === '_'){
+      if (attrName.substr(0, 1) === '_') {
         continue
       }
 
       const attrType = this[`${attrName}Type`]
-
 
       if (!attrType) {
         throw new Error(`There is no attribute "${attrName}" in class "${this.getClassName()}"`)
@@ -111,6 +110,10 @@ export default class Model {
   static async createCollection (collectionData) {
     const collection = []
     const Class = this
+
+    if (!Array.isArray(collectionData)) {
+      throw new Error(`CollectionData in "${this.getClassName()}" must be an Array. got "${collectionData}"`)
+    }
 
     for (const data of collectionData) {
       collection.push(await Class.create(data))
@@ -181,7 +184,15 @@ export default class Model {
   static _validateAndGetValue (attrType, attrName, value) {
     // eslint-disable-next-line valid-typeof
     if (typeof (value) !== attrType) {
-      throw new TypeError(`Attribute "${attrName}"(${value}) must be of type "${attrType}", get "${typeof (value)}"`)
+      throw new TypeError(`
+      Attribute
+      '${attrName}'(${value})
+      must
+      be
+      of
+      type
+      '${attrType}', get
+      '${typeof (value)}'`)
     }
     return cloneDeep(value)
   }
@@ -227,7 +238,14 @@ export default class Model {
     attrType = attrType.substr(0, attrType.length - 2)
 
     if (!Array.isArray(values)) {
-      throw new TypeError(`Attribute "${attrName}" in class "${this.getClassName()}" must be an array.`)
+      throw new TypeError(`
+      Attribute
+      '${attrName}' in class
+      '${this.getClassName()}'
+      must
+      be
+      an
+      array.`)
     }
 
     Object.defineProperty(instance, attrName, {
@@ -244,7 +262,27 @@ export default class Model {
       } else if (['boolean', 'number', 'string'].includes(attrType)) {
         instance[attrName].push(this._validateAndGetValue(attrType, attrName, value))
       } else {
-        throw new Error(`Type "${attrType}" defined in class "${this.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string or numbers.`)
+        throw new Error(`
+      Type
+      '${attrType}'
+      defined in class
+      '${this.getClassName()}'
+      is
+      invalid.Must
+      be
+      a
+      subclass
+      of
+      Model
+      name
+      or
+      primitive
+      types
+      such
+      as
+      boolean, string
+      or
+      numbers.`)
       }
     }
   }
@@ -273,7 +311,14 @@ export default class Model {
     }
 
     if (!syles[this.fileCaseStyle]) {
-      throw new Error(`Case style  "${this.fileCaseStyle}" is invalid. Check "fileCaseStyle" option.`)
+      throw new Error(`
+      Case
+      style
+      '${this.fileCaseStyle}'
+      is
+      invalid.Check
+      'fileCaseStyle'
+      option.`)
     }
 
     return syles[this.fileCaseStyle]()
