@@ -6,7 +6,7 @@
  *
  */
 
-import { camelCase, isPlainObject, kebabCase, snakeCase } from 'lodash'
+import { cloneDeep, camelCase, isPlainObject, kebabCase, snakeCase } from 'lodash'
 
 export default class Model {
   /**
