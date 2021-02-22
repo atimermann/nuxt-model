@@ -75,8 +75,11 @@ export default class Model {
         throw new Error(`There is no attribute "${attrName}" in class "${this.getClassName()}"`)
       }
 
-      // TODO: Verificar outros tipos como Date
-      if (attrType.substr(-2) === '[]') {
+      if (value === null || value === undefined){
+        continue
+      }
+
+     if (attrType.substr(-2) === '[]') {
         await this._createCollectionAttribute(instance, attrType, attrName, value)
       } else if (attrType.substr(-5) === 'Model') {
         const subClassInstance = await this._createSubModelAttribute(instance, attrType, attrName, value)
@@ -86,6 +89,19 @@ export default class Model {
           writable: false,
           value: subClassInstance
         })
+      } else if (attrType === 'Date') {
+
+        if (typeof (attrType) !== 'string') {
+          throw new TypeError(`Attribute "${attrName}"(${value}) must be of type "string", get "${typeof (value)}"`)
+        }
+
+        Object.defineProperty(instance, attrName, {
+          enumerable: true,
+          configurable: false,
+          writable: true,
+          value: new Date(value)
+        })
+
       } else if (['boolean', 'number', 'string'].includes(attrType)) {
         Object.defineProperty(instance, attrName, {
           enumerable: true,
@@ -203,8 +219,8 @@ export default class Model {
   static async _createSubModelAttribute (instance, attrType, attrName, value) {
     const Class = await Model.loadModelModule(this._getClassFileName(attrType))
 
-    if (!Class._modelClass){
-      throw new Error (`Class "${attrType}" must be instance of Model.`)
+    if (!Class._modelClass) {
+      throw new Error(`Class "${attrType}" must be instance of Model.`)
     }
 
     const subClassInstance = await Class.create(value)
