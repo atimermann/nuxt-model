@@ -15,7 +15,7 @@ import { defaults } from 'lodash'
 export default function NuxtModelModule (optionsModule) {
   this.addPlugin(
     {
-      src: path.resolve(__dirname, '..', 'src', 'plugin.js.tpl'),
+      src: path.resolve(__dirname, '..', 'dist', 'plugin.js.tpl'),
       options: defaults(
         optionsModule,
         {
