@@ -37,15 +37,16 @@ export default {
       name: {
         id: 2,
         name: [{
-          id: 3
+          id: 3,
+          __typename: 'teste'
         }, {
           id: 4
         }]
       }
     })
 
-    // console.log('FINAL', this.teste.toJSON())
-    // console.log('FINAL', '= ' + this.teste)
+    // console.log('FINAL', this.test.toJSON())
+    // console.log('FINAL', '= ' + this.test)
   }
 
 }

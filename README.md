@@ -52,3 +52,8 @@ export default class TesteModel extends Model {
 | importPath            | Nuxt-model, carrega e instancia objetos automaticamente, através de importPath o nuxt-model consegue encontrar as classes. Está no formato "template string" e a variável "modelName" representa o nome da classe. É usado para definir a estrutura de diretório utilizado para os modelos. | "~/models/${modelName}.model.js" |
 | enableConstructorName | Habilita identificação da classe pelo constructorName, caso esta opção esteja desativada é necessário especificar o nome da classe no atributo estático "class". Para ativar esta opção é necessário realizar uma pré-configuração.                                                         | true                             |
 | fileCaseStyle         | Estilo de caixa (Case Style) do arquivos do model, por exemplo para kebabCase o model será sub-teste.model.js, para camelCase será subTeste.model.js.                                                                                                                                       | 'kebabCase'                      |
+
+Table Editor: https://www.tablesgenerator.com/markdown_tables
+
+
+https://dev.to/bawa_geek/how-to-setup-jest-testing-in-nuxt-js-project-5c84

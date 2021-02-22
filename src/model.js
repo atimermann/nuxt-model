@@ -64,7 +64,13 @@ export default class Model {
     const instance = new Class()
 
     for (const [attrName, value] of Object.entries(data)) {
+
+      if (attrName.substr(0,1) === '_'){
+        continue
+      }
+
       const attrType = this[`${attrName}Type`]
+
 
       if (!attrType) {
         throw new Error(`There is no attribute "${attrName}" in class "${this.getClassName()}"`)
