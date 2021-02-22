@@ -1,6 +1,6 @@
 {
   "name": "@atimermann/nuxt-model",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Classe para implementação de modelos de dado orientado a objeto",
   "main": "dist/model.js",
   "scripts": {
