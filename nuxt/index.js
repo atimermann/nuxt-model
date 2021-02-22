@@ -17,13 +17,13 @@ export default function NuxtModelModule (optionsModule) {
     {
       src: path.resolve(__dirname, '..', 'src', 'plugin.js.tpl'),
       options: defaults(
+        optionsModule,
         {
           importPath: '~/models/${modelName}.model.js',
           enableConstructorName: true,
           fileCaseStyle: 'kebabCase'
           // Novos atributos devem ser configurados aqui, em plugins.js.tpl e no contrutor do model.js
-        },
-        optionsModule
+        }
       )
     }
   )

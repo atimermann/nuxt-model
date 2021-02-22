@@ -2,14 +2,15 @@
 
 Módulo que dá suporte a criação de "modelos de dados" orientado a objeto baseado em classes e relacionamento entre classes.
 
-Este módulo permite criar objetos (instancia de classes) à partir de dados no formato JSON simples, com todo os 
+Este módulo permite criar objetos (instancia de classes) a partir de dados no formato JSON simples com todos os 
 relacionamentos automaticamente.
 
 # Pré-configuração
 
-## Habilitar identificação automática do nome da classe (enableConstructorName)
+## Sugestão: Habilitar identificação automática do nome da classe (enableConstructorName)
 
-Para o nuxt-model conseguir identificar automaticamente o nome das classes é necessário adicionar a seguinte configuração no arquivo nuxt.config.js:
+Caso prefira que o nome das classes sejam identificadas corretamente nas mensagens de erro no ambiente de produção, pode 
+adicionar a seguinte configuração no arquivo nuxt.config.js:
 
 ```javascript
 build: {
@@ -32,20 +33,29 @@ REFs:
 * https://webpack.js.org/configuration/optimization/#optimizationminimize
 * https://webpack.js.org/plugins/terser-webpack-plugin/
 
-Caso não posso realizar essas modificações, ao criar uma classe model é necessário definir enableConstructorName para 
-false e identificar o nome da classe novamente com **className** como no exemplo:
+Podemos também identificar o nome da classe através do atributo **className** quando enableConstructorName for falso
+como no exemplo:
 
 ```javascript
 export default class TesteModel extends Model {
   static className = 'TesteModel' 
 }
 ```
+# Instalação e configuração
 
+Execute o comando:
 
+    npm install --save @atimermann/nuxt-model
 
+Adicione o seguinte no arquivo nuxt.config.js:
+
+```javascript
+['@atimermann/nuxt-model/nuxt', { /* Options */}]
+```
 
 # Rêferencia
 
+Ao configurar o modulo no projeto, podemos definir as seguintes opções: 
 
 | Atributo              | Descrição                                                                                                                                                                                                                                                                                   | Padrão                           |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
