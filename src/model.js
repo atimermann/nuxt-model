@@ -6,7 +6,7 @@
  *
  */
 
-import { cloneDeep, camelCase, isPlainObject, kebabCase, snakeCase } from 'lodash'
+import { camelCase, cloneDeep, isPlainObject, kebabCase, snakeCase } from 'lodash'
 
 export default class Model {
   /**
@@ -112,7 +112,7 @@ export default class Model {
     const Class = this
 
     if (!Array.isArray(collectionData)) {
-      throw new Error(`CollectionData in "${this.getClassName()}" must be an Array. got "${collectionData}"`)
+      throw new Error(`CollectionData in "${this.getClassName()}" must be an Array. Got "${collectionData}"`)
     }
 
     for (const data of collectionData) {
@@ -184,15 +184,7 @@ export default class Model {
   static _validateAndGetValue (attrType, attrName, value) {
     // eslint-disable-next-line valid-typeof
     if (typeof (value) !== attrType) {
-      throw new TypeError(`
-      Attribute
-      '${attrName}'(${value})
-      must
-      be
-      of
-      type
-      '${attrType}', get
-      '${typeof (value)}'`)
+      throw new TypeError(`Attribute "${attrName}"(${value}) must be of type "${attrType}", get "${typeof (value)}"`)
     }
     return cloneDeep(value)
   }
@@ -210,6 +202,11 @@ export default class Model {
    */
   static async _createSubModelAttribute (instance, attrType, attrName, value) {
     const Class = await Model.loadModelModule(this._getClassFileName(attrType))
+
+    if (!Class._modelClass){
+      throw new Error (`Class "${attrType}" must be instance of Model.`)
+    }
+
     const subClassInstance = await Class.create(value)
 
     // Vincula com pai
@@ -238,14 +235,7 @@ export default class Model {
     attrType = attrType.substr(0, attrType.length - 2)
 
     if (!Array.isArray(values)) {
-      throw new TypeError(`
-      Attribute
-      '${attrName}' in class
-      '${this.getClassName()}'
-      must
-      be
-      an
-      array.`)
+      throw new TypeError(`Attribute "${attrName}" in class "${this.getClassName()}" must be an array.`)
     }
 
     Object.defineProperty(instance, attrName, {
@@ -262,27 +252,7 @@ export default class Model {
       } else if (['boolean', 'number', 'string'].includes(attrType)) {
         instance[attrName].push(this._validateAndGetValue(attrType, attrName, value))
       } else {
-        throw new Error(`
-      Type
-      '${attrType}'
-      defined in class
-      '${this.getClassName()}'
-      is
-      invalid.Must
-      be
-      a
-      subclass
-      of
-      Model
-      name
-      or
-      primitive
-      types
-      such
-      as
-      boolean, string
-      or
-      numbers.`)
+        throw new Error(`Type "${attrType}" defined in class "${this.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string or numbers.`)
       }
     }
   }
@@ -311,14 +281,7 @@ export default class Model {
     }
 
     if (!syles[this.fileCaseStyle]) {
-      throw new Error(`
-      Case
-      style
-      '${this.fileCaseStyle}'
-      is
-      invalid.Check
-      'fileCaseStyle'
-      option.`)
+      throw new Error(`Case style "${this.fileCaseStyle}" is invalid. Check "fileCaseStyle" option.`)
     }
 
     return syles[this.fileCaseStyle]()
