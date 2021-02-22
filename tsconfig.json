@@ -1,6 +1,7 @@
 {
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "src/plugin.js.tpl"
   ],
   "compilerOptions": {
     // Altera o formato do arquivo de saída, navegadores modernos suportam ES6
@@ -21,5 +22,6 @@
   },
   "exclude": [
     "node_modules"
-  ]
+  ],
+
 }
