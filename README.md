@@ -55,6 +55,8 @@ Adicione o seguinte no arquivo nuxt.config.js:
 
 # Rêferencia
 
+## Opções
+
 Ao configurar o modulo no projeto, podemos definir as seguintes opções: 
 
 | Atributo              | Descrição                                                                                                                                                                                                                                                                                   | Padrão                           |
