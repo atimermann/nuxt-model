@@ -58,7 +58,7 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
-    ['@atimermann/nuxt-model/nuxt', { importPath: '~/models/${modelName}.model.js' }]
+    ['@agtm/nuxt-model/nuxt', { importPath: '~/models/${modelName}.model.js' }]
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios

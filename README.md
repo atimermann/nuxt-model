@@ -80,6 +80,13 @@ models\
     carteira-do-aluno.model.js
 ```
 
+Também podemos ter tipos customizados:
+
+```
+types\
+    money.type.js    
+```
+
 ## Customizando estrutura de diretório
 
 Caso precisemos utilizar uma estrutura de diretório diferente, podemos alterar dois atributos na configuraçao do modulo: importPath e fileCaseStyle
@@ -107,6 +114,8 @@ Para isso configuramos importPath como:
 E finalmente para utilizar outro padrão de nome de modelo podemos definir fileCaseStyle como:
     
     kebabCase, camelCase ou snakeCase
+
+Seguindo a mesma regra também podemos customizar a estrutura de diretório dos tipos padrões
 
 # Criando um Model
 
@@ -151,29 +160,44 @@ export default class AlunoModel extends Model {
 ```
 * Os atributos do model são atributos de classe, portando teve ser definidos como estático
 * Todo atributo deve ser prefixado com "Type"
-* Os tipos permitidos são: string, number, boolean, data e outro model declarado
+* Os tipos permitidos são: string, number, boolean, data, um tipo customizado, um model ou array dos tipos anteriroes.
 * Para tipos simples devem ser definidos com texto em string, não utilizar os tipos do javascript.
-* Ignora atributo q não existe, use setValue se deseja validar
+  
+## Valores iniciais
 
+* Nome de atributos que iniciam com _ são ignorados
 
+## Tipos Primitivos
 
-*  Nome de atributos que iniciam com _ são ignorados
+## Tipo Date
 
-# TODO: Tipos especiais
+## Tipo Array
 
-* TODO: implementar, para ser utilizdos por outros módulos
-~~* TODO: implementar apenas propriedades muito básica como required~~
-* TODO: implementar outras validações no futuro
-* TODO: implementar validações customizadas
-* TODO: Criar classe Type onde podemos definir tipos complexos (com validação etc...)
+# Criando Getters e Setters
 
 # Instanciando e manipulando um Model
+
+* TODO: explicar q tudo é getter e setter
+* TODO: Explicar mpush
+* TODO: Explicar setValue
+* TODO: Alertar sobre atributos não definidos
+
 
 # TODO: Integração com Nuxt
 
 * Colocar link para documentação no nuxt
 
-# toJson e toString
+# toJSON e toString
+
+
+
+# TODO: Tipos Customizados
+
+* TODO: Explicar a técnica definiPropery
+* TODO: observação sobre getter e setter assincrono
+* TODO: explocar __rawValues
+* TODO: Exemplos de tipos customizados: formatação, internacionalização, 
+* TODO: explicar integração com nuxt this.constructor
 
 # Rêferencia
 
@@ -184,6 +208,7 @@ Ao configurar o modulo no projeto, podemos definir as seguintes opções:
 | Atributo              | Descrição                                                                                                                                                                                                                                                                                   | Padrão                           |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
 | importPath            | Nuxt-model, carrega e instancia objetos automaticamente, através de importPath o nuxt-model consegue encontrar as classes. Está no formato "template string" e a variável "modelName" representa o nome da classe. É usado para definir a estrutura de diretório utilizado para os modelos. | "~/models/${modelName}.model.js" |
+| typeImportPath        / Regra de carregamento para os tipos customizados.                                                                                                                                                                                                                                           | "~/types/${typeName}.type.js"    |
 | enableConstructorName | Habilita identificação da classe pelo constructorName, caso esta opção esteja desativada é necessário especificar o nome da classe no atributo estático "class". Para ativar esta opção é necessário realizar uma pré-configuração.                                                         | true                             |
 | fileCaseStyle         | Estilo de caixa (Case Style) do arquivos do model, por exemplo para kebabCase o model será sub-teste.model.js, para camelCase será subTeste.model.js.                                                                                                                                       | 'kebabCase'                      |
 
@@ -195,4 +220,5 @@ https://dev.to/bawa_geek/how-to-setup-jest-testing-in-nuxt-js-project-5c84
 
 # Melhorias Futuras
 
-* Opção para validar __typename (util para graphql,  valida se os tipo de dados é correto)
+* TODO: Opção para validar __typename (util para graphql,  valida se os tipo de dados é correto)
+* TODO: Propriedades customizada de cada atributo para ser utilizado externamente

@@ -4,6 +4,8 @@
  * src/model.ts
  * @author Cheap2Ship
  *
+ * TODO: Transformar getters e settes em async: https://medium.com/trabe/async-getters-and-setters-is-it-possible-c18759b6f7e4
+ *
  */
 
 import { camelCase, isPlainObject, kebabCase, snakeCase } from 'lodash'
@@ -136,6 +138,7 @@ export default class Model {
   static configure (options) {
 
     Model.loadModelModule = options.loadModelModuleFunction
+    Model.loadTypeModule = options.loadTypeModuleFunction
     Model.enableConstructorName = options.enableConstructorName
     Model.fileCaseStyle = options.fileCaseStyle
 
@@ -179,6 +182,8 @@ export default class Model {
         const attrType = Class[classAttribute]
         const attrInitialValue = instance[attrName]
 
+        delete instance[attrName]
+
         if (attrType.substr(-2) === '[]') {
           ArrayType.setup(instance, attrName, attrType)
         } else if (attrType.substr(-5) === 'Model') {
@@ -188,11 +193,18 @@ export default class Model {
         } else if (['boolean', 'number', 'string'].includes(attrType)) {
           PrimitiveType.setup(instance, attrName, attrType)
         } else {
-          throw new Error(`Type "${attrType}" defined in class "${Class.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string or numbers.`)
+          const TypeClass = Model.loadTypeModule(this._formatFileName(attrType))
+          if (!TypeClass) {
+            // TODO: nunca via chegar aqui, pois dá erro ao carregar modulo q não existe, talvez criar um try catch
+            throw new Error(`Type "${attrType}" defined in class "${Class.getClassName()}" is invalid. Must be a subclass of Model, custom type or primitive types such as boolean, string or numbers.`)
+          }
+          if (!TypeClass._modelTypeClass) {
+            throw new Error(`Class "${attrType}" must be instance of Type.`)
+          }
+          TypeClass.setup(instance, attrName, attrType)
         }
 
         if (attrInitialValue !== undefined && attrInitialValue !== null) {
-          delete instance[attrName]
           instance[attrName] = attrInitialValue
         }
 
@@ -431,8 +443,20 @@ export default class Model {
    */
   static _getClassFileName (className) {
     const fileName = className.substring(0, className.length - 5)
+    return this._formatFileName(fileName)
 
-    const syles = {
+  }
+
+  /**
+   * Formata nome do arquivo de acordo com a configuração
+   *
+   * @param {string}  fileName  Nome do arquivo
+   * @return {*}
+   * @private
+   */
+  static _formatFileName (fileName) {
+
+    const styles = {
       kebabCase () {
         return kebabCase(fileName)
       },
@@ -444,10 +468,12 @@ export default class Model {
       }
     }
 
-    if (!syles[this.fileCaseStyle]) {
+    if (!styles[this.fileCaseStyle]) {
       throw new Error(`Case style "${this.fileCaseStyle}" is invalid. Check "fileCaseStyle" option.`)
     }
 
-    return syles[this.fileCaseStyle]()
+    return styles[this.fileCaseStyle]()
+
   }
+
 }

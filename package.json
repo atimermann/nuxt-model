@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com:atimermann/nuxt-model.git"
+    "url": "git+https://github.com:agtm/nuxt-model.git"
   },
   "keywords": [
     "model"
@@ -18,9 +18,9 @@
   "author": "André Timermann <andre@timermann.com.br> (http://andre.timermann.com.br)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com:atimermann/nuxt-model/issues"
+    "url": "https://github.com:agtm/nuxt-model/issues"
   },
-  "homepage": "https://github.com:atimermann/nuxt-model#readme",
+  "homepage": "https://github.com:agtm/nuxt-model#readme",
   "dependencies": {
     "eslint": "^7.20.0",
     "lodash": "^4.17.21"

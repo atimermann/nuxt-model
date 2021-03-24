@@ -46,6 +46,9 @@ export default {
       id: 5
     })
 
+    this.teste.pais = 'Argentina'
+
+
     console.log('FINAL', '= ', this.teste)
     console.log('FINAL JSON', this.teste.toJSON())
   },

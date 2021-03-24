@@ -20,6 +20,7 @@ export default function NuxtModelModule (optionsModule) {
         optionsModule,
         {
           importPath: '~/models/${modelName}.model.js',
+          typeImportPath: '~/types/${typeName}.type.js',
           enableConstructorName: true,
           fileCaseStyle: 'kebabCase'
           // Novos atributos devem ser configurados aqui, em plugins.js.tpl e no contrutor do model.js

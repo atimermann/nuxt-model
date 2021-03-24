@@ -8,16 +8,18 @@
 
 'use strict'
 
-import Model from '@atimermann/nuxt-model'
+import Model from '@agtm/nuxt-model'
 
 export default class TesteModel extends Model {
   static nameType = 'SubTesteModel'
   static idType = 'number'
   static nascimentoType = 'date'
   static profissaoType = 'string'
+  static paisType = 'i18n'
 
   id = 123
   profissao = 'Desenvolvedor'
+  pais = 'Brazil'
 
   get isStatic () {
     return Model.context.isStatic + this.id

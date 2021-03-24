@@ -15,16 +15,6 @@ export default class ModelType {
    */
   static _modelTypeClass = true
 
-  static setup (instance, attrName) {
-    Object.defineProperty(instance, attrName, {
-      get () {
-        return instance.__rawValues[attrName]
-      },
-      set (value) {
-        instance.__rawValues[attrName] = value
-      }
-    })
 
-  }
 
 }

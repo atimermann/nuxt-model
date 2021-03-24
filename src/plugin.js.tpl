@@ -9,12 +9,18 @@
  */
 'use strict'
 
-import Model from '@atimermann/nuxt-model'
+import Model from '@agtm/nuxt-model'
 
 export default (context) => {
-
   const loadModelModuleFunction = function (modelName) {
     const Module = require(`<%= options.importPath %>`)
+    if (Module) {
+      return Module.default
+    }
+  }
+
+  const loadTypeModuleFunction = function (typeName) {
+    const Module = require(`<%= options.typeImportPath %>`)
     if (Module) {
       return Module.default
     }
@@ -23,6 +29,7 @@ export default (context) => {
   Model.configure({
     context,
     loadModelModuleFunction,
+    loadTypeModuleFunction,
     enableConstructorName: <%= options.enableConstructorName %>,
     fileCaseStyle: '<%= options.fileCaseStyle %>'
   })
