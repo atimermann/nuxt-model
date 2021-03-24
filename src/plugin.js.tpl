@@ -13,8 +13,8 @@ import Model from '@atimermann/nuxt-model'
 
 export default (context) => {
 
-  const loadModelModuleFunction = async function (modelName) {
-    const Module = await import(`<%= options.importPath %>`)
+  const loadModelModuleFunction = function (modelName) {
+    const Module = require(`<%= options.importPath %>`)
     if (Module) {
       return Module.default
     }

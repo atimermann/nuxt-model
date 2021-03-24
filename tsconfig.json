@@ -12,7 +12,7 @@
     // Sistema de resolução de modulos no arquivo fonte (entrada) .ts. Módo de busca
     "moduleResolution": "node",
     "outDir": "dist",
-    "sourceMap": true,
+//    "sourceMap": true,
     "alwaysStrict": true,
     "noImplicitAny": false,
     "removeComments": true,

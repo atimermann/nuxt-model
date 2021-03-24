@@ -4,7 +4,11 @@ import TerserPlugin from 'terser-webpack-plugin'
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
-
+  server: {
+    port: 8000, // default: 3000
+    host: '0.0.0.0', // default: localhost,
+    timing: false
+  },
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s - test',
@@ -45,7 +49,7 @@ export default {
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/eslint
-    '@nuxtjs/eslint-module',
+    // '@nuxtjs/eslint-module',
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify'
   ],

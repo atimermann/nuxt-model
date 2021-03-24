@@ -6,14 +6,10 @@
         alt="Vuetify.js"
         class="mb-5"
       >
-      <blockquote class="blockquote">
-        &#8220;First, solve the problem. Then, write the code.&#8221;
-        <footer>
-          <p>
-            IS_STATIC: {{ teste }}
-          </p>
-        </footer>
-      </blockquote>
+      <div class="text-left">
+        <pre>{{ JSON.stringify(teste, undefined, '  ') }}</pre>
+      </div>
+      <v-btn @click="change">CHANGE</v-btn>
     </v-col>
   </v-row>
 </template>
@@ -34,6 +30,7 @@ export default {
 
     this.teste = await Teste.create({
       id: 1,
+      nascimento: '2020-01-01',
       name: {
         id: 2,
         name: [{
@@ -45,8 +42,26 @@ export default {
       }
     })
 
-    // console.log('FINAL', this.test.toJSON())
-    // console.log('FINAL', '= ' + this.test)
+    this.teste.name.name.mpush({
+      id: 5
+    })
+
+    console.log('FINAL', '= ', this.teste)
+    console.log('FINAL JSON', this.teste.toJSON())
+  },
+
+  methods: {
+    change () {
+
+      this.teste.id++
+      this.teste.name.name.push({
+        id: 5
+      })
+
+      this.teste.nao_existe = 123
+
+    }
+
   }
 
 }

@@ -6,9 +6,15 @@
  *
  */
 
-import { camelCase, cloneDeep, isPlainObject, kebabCase, snakeCase } from 'lodash'
+import { camelCase, isPlainObject, kebabCase, snakeCase } from 'lodash'
+
+import PrimitiveType from './types/primitive.type'
+import DateType from './types/date.type'
+import SubModelType from './types/sub-model.type'
+import ArrayType from './types/array.type'
 
 export default class Model {
+
   /**
    * Nome desta classe, usada quando enableConstructorName for falso
    *
@@ -17,7 +23,7 @@ export default class Model {
   static className = '__BASE__'
 
   /**
-   * Usado para identificar que a classe é uma subclase de Model (nunca deve ser alterada nas subclasses)
+   * Usado para identificar que a classe do usuário é uma subclase de Model (nunca deve ser alterada nas subclasses)
    * @type {boolean}
    */
   static _modelClass = true
@@ -110,10 +116,25 @@ export default class Model {
   static nuxtState = null
 
   /**
+   * Usado pela instancia, armazena valores dos atributos, serão acessados via getter e setter
+   *
+   * @type {{}}
+   * @private
+   */
+  __rawValues = {}
+
+  /**
+   * Link para Model pai (caso seja subModel)
+   * @type {Model}
+   */
+  __parent = null
+
+  /**
    * Configurção da classe, usado na inicialização do nuxt
    * @param options
    */
   static configure (options) {
+
     Model.loadModelModule = options.loadModelModuleFunction
     Model.enableConstructorName = options.enableConstructorName
     Model.fileCaseStyle = options.fileCaseStyle
@@ -144,72 +165,40 @@ export default class Model {
    *
    * @return {Promise<Model>}
    */
-  static async create (data) {
-    if (!data) {
-      throw new Error(`[${this.getClassName()}] Data cannot be null or undefined when creating a model.`)
-    }
-
-    if (Array.isArray(data)) {
-      throw new TypeError(`[${this.getClassName()}] Array is not allowed. To create collections use createCollection.`)
-    }
-
-    if (!isPlainObject(data)) {
-      throw new TypeError(`[${this.getClassName()}] Date attribute must be a plain object. ("${JSON.stringify(data)}")`)
-    }
+  static create (data) {
 
     const Class = this
     const instance = new Class()
 
-    for (const [attrName, value] of Object.entries(data)) {
+    // Cria Objeto
+    for (const classAttribute of Object.getOwnPropertyNames(Class)) {
 
-      if (attrName.substr(0, 1) === '_') {
-        continue
-      }
+      if (classAttribute.substr(-4) === 'Type') {
 
-      const attrType = this[`${attrName}Type`]
+        const attrName = classAttribute.substring(0, classAttribute.length - 4)
+        const attrType = Class[classAttribute]
+        const attrInitialValue = instance[attrName]
 
-      if (!attrType) {
-        throw new Error(`There is no attribute "${attrName}" in class "${this.getClassName()}"`)
-      }
-
-      if (value === null || value === undefined) {
-        continue
-      }
-
-      if (attrType.substr(-2) === '[]') {
-        await this._createCollectionAttribute(instance, attrType, attrName, value)
-      } else if (attrType.substr(-5) === 'Model') {
-        const subClassInstance = await this._createSubModelAttribute(instance, attrType, attrName, value)
-        Object.defineProperty(instance, attrName, {
-          enumerable: true,
-          configurable: false,
-          writable: false,
-          value: subClassInstance
-        })
-      } else if (attrType === 'Date') {
-
-        if (typeof (attrType) !== 'string') {
-          throw new TypeError(`Attribute "${attrName}"(${value}) must be of type "string", get "${typeof (value)}"`)
+        if (attrType.substr(-2) === '[]') {
+          ArrayType.setup(instance, attrName, attrType)
+        } else if (attrType.substr(-5) === 'Model') {
+          SubModelType.setup(instance, attrName, attrType)
+        } else if (attrType === 'date') {
+          DateType.setup(instance, attrName, attrType)
+        } else if (['boolean', 'number', 'string'].includes(attrType)) {
+          PrimitiveType.setup(instance, attrName, attrType)
+        } else {
+          throw new Error(`Type "${attrType}" defined in class "${Class.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string or numbers.`)
         }
 
-        Object.defineProperty(instance, attrName, {
-          enumerable: true,
-          configurable: false,
-          writable: true,
-          value: new Date(value)
-        })
+        if (attrInitialValue !== undefined && attrInitialValue !== null) {
+          delete instance[attrName]
+          instance[attrName] = attrInitialValue
+        }
 
-      } else if (['boolean', 'number', 'string'].includes(attrType)) {
-        Object.defineProperty(instance, attrName, {
-          enumerable: true,
-          configurable: false,
-          writable: true,
-          value: this._validateAndGetValue(attrType, attrName, value)
-        })
-      } else {
-        throw new Error(`Type "${attrType}" defined in class "${this.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string or numbers.`)
       }
     }
+    instance.setValues(data)
 
     return instance
   }
@@ -220,16 +209,16 @@ export default class Model {
    * @param {object[]} collectionData
    * @return {Promise<[]>}
    */
-  static async createCollection (collectionData) {
+  static createCollection (collectionData) {
     const collection = []
     const Class = this
 
     if (!Array.isArray(collectionData)) {
-      throw new Error(`CollectionData in "${this.getClassName()}" must be an Array. Got "${collectionData}"`)
+      throw new Error(`CollectionData in "${Class.getClassName()}" must be an Array. Got "${collectionData}"`)
     }
 
     for (const data of collectionData) {
-      collection.push(await Class.create(data))
+      collection.push(Class.create(data))
     }
 
     return collection
@@ -241,32 +230,88 @@ export default class Model {
    * @return {string}
    */
   static getClassName () {
+    const Class = this
+
     return Model.enableConstructorName
-      ? this.name
-      : this.className
+      ? Class.name
+      : Class.className
+  }
+
+  /**
+   * Atribui vários valores de uma unica vez. Se um atributo não for definido, não será alterado
+   * Utilize toJSON para todos os valores do objeto
+   *
+   * @param data
+   */
+  setValues (data) {
+
+    const Class = this.constructor
+
+    if (!data) {
+      throw new Error(`[${Class.getClassName()}] Data cannot be null or undefined when creating a model.`)
+    }
+
+    if (Array.isArray(data)) {
+      throw new TypeError(`[${Class.getClassName()}] Array is not allowed. To create collections use createCollection.`)
+    }
+
+    if (!isPlainObject(data)) {
+      throw new TypeError(`[${Class.getClassName()}] Date attribute must be a plain object. ("${JSON.stringify(data)}")`)
+    }
+
+    for (const [attrName, value] of Object.entries(data)) {
+
+      if (attrName.substr(0, 1) === '_') {
+        continue
+      }
+      if (!Class[`${attrName}Type`]) {
+        throw new Error(`There is no attribute "${attrName}" in class "${Class.getClassName()}"`)
+      }
+      if (value === null || value === undefined) {
+        continue
+      }
+      this[attrName] = value
+    }
+
   }
 
   /**
    * Retorna Objeto JSON deste model
+   * Utilize setValues para definir valores
    *
    * @return {{}}
    */
   toJSON () {
     const result = {}
+
+    // Getters da instancia (Criado automaticamente)
     for (const attrName of Object.getOwnPropertyNames(this)) {
       if (attrName.substr(0, 1) !== '_') {
-        const attrDescriptor = Object.getOwnPropertyDescriptor(this, attrName)
+        const attrValue = this[attrName]
 
-        // Atributo é outro model
-        if (attrDescriptor.value.constructor._modelClass) {
-          result[attrName] = attrDescriptor.value.toJSON()
+        if (attrValue === undefined) {
+          continue
+        }
+
+        if (Array.isArray(attrValue)) {
+
+          result[attrName] = attrValue.map(value => {
+            if (value && value.constructor._modelClass) {
+              return value.toJSON()
+            } else {
+              return value
+            }
+          })
+
+        } else if (attrValue && attrValue.constructor._modelClass) {
+          result[attrName] = attrValue.toJSON()
         } else {
-          result[attrName] = attrDescriptor.value
+          result[attrName] = attrValue
         }
       }
     }
 
-    // Getters
+    // Getters da Classe (definido pelo usuario)
     for (const attrName of Object.getOwnPropertyNames(this.constructor.prototype)) {
       if (attrName !== 'constructor') {
         result[attrName] = this[attrName]
@@ -286,20 +331,63 @@ export default class Model {
   }
 
   /**
-   * Valida o tipo do valor e retorna clone dele
+   * Caso tipo do atributo seja array, trata valores de acordocom o tipo
    *
-   * @param {String} attrType
-   * @param {String} attrName
-   * @param  value
-   *
+   * @param instance
+   * @param attrType
+   * @param attrName
+   * @param values
+   * @return {Promise<void>}
    * @private
    */
-  static _validateAndGetValue (attrType, attrName, value) {
-    // eslint-disable-next-line valid-typeof
-    if (typeof (value) !== attrType) {
-      throw new TypeError(`Attribute "${attrName}"(${value}) must be of type "${attrType}", get "${typeof (value)}"`)
+  static createCollectionAttributeValue (instance, attrType, attrName, values) {
+    // remove []
+    attrType = attrType.substr(0, attrType.length - 2)
+
+    if (!Array.isArray(values)) {
+      throw new TypeError(`Attribute "${attrName}" in class "${this.getClassName()}" must be an array.`)
     }
-    return cloneDeep(value)
+
+    const collection = []
+    for (const value of values) {
+      collection.push(this.createAttributeValue(instance, attrType, attrName, value))
+    }
+    return collection
+  }
+
+  /**
+   * Processa um valor, verificando o tipo relacioado a ele. se for instancia de model,t ransforma objeto em uma
+   * instnacia de model, se for Date converte stringe em objeto Date, caso contrário apenas retorna valor
+   *
+   * Usado para criaação de coleção ou atributos do tipo array
+   *
+   * @param {Model}   instance  Objeto instancia de Model parar atribuir valor
+   * @param {string}  attrType  Tipo de atributo
+   * @param {string}  attrName  Nome do atributo
+   * @param {any}     value     Valor
+   * @return {Promise<void>|*}
+   * @private
+   */
+  static createAttributeValue (instance, attrType, attrName, value) {
+
+    if (attrType.substr(-5) === 'Model') {
+      return this._createSubModelAttribute(instance, attrType, attrName, value)
+    } else if (attrType === 'date') {
+
+      if (value instanceof Date) {
+        instance.__rawValues[attrName] = value
+      } else if (typeof (value) === 'string') {
+        instance.__rawValues[attrName] = new Date(value)
+      } else {
+        throw new TypeError(`Attribute "${attrName}"(${value}) must be instance of Date or type "string", get "${typeof (value)}"`)
+      }
+
+    } else if (['boolean', 'number', 'string'].includes(attrType)) {
+      return value
+    } else {
+      throw new Error(`Type "${attrType}" defined in class "${this.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string or numbers.`)
+    }
+
   }
 
   /**
@@ -313,14 +401,14 @@ export default class Model {
    * @return {Promise<void>}
    * @private
    */
-  static async _createSubModelAttribute (instance, attrType, attrName, value) {
-    const Class = await Model.loadModelModule(this._getClassFileName(attrType))
+  static _createSubModelAttribute (instance, attrType, attrName, value) {
+    const Class = Model.loadModelModule(this._getClassFileName(attrType))
 
     if (!Class._modelClass) {
       throw new Error(`Class "${attrType}" must be instance of Model.`)
     }
 
-    const subClassInstance = await Class.create(value)
+    const subClassInstance = Class.create(value)
 
     // Vincula com pai
     Object.defineProperty(subClassInstance, '__parent', {
@@ -331,43 +419,6 @@ export default class Model {
     })
 
     return subClassInstance
-  }
-
-  /**
-   * Adiciona um atributo do tipo coleção a uma instancia do modelo
-   *
-   * @param instance
-   * @param attrType
-   * @param attrName
-   * @param values
-   * @return {Promise<void>}
-   * @private
-   */
-  static async _createCollectionAttribute (instance, attrType, attrName, values) {
-    // remove []
-    attrType = attrType.substr(0, attrType.length - 2)
-
-    if (!Array.isArray(values)) {
-      throw new TypeError(`Attribute "${attrName}" in class "${this.getClassName()}" must be an array.`)
-    }
-
-    Object.defineProperty(instance, attrName, {
-      enumerable: true,
-      configurable: false,
-      writable: false,
-      value: []
-    })
-
-    for (const value of values) {
-      if (attrType.substr(-5) === 'Model') {
-        const subClassInstance = await this._createSubModelAttribute(instance, attrType, attrName, value)
-        instance[attrName].push(subClassInstance)
-      } else if (['boolean', 'number', 'string'].includes(attrType)) {
-        instance[attrName].push(this._validateAndGetValue(attrType, attrName, value))
-      } else {
-        throw new Error(`Type "${attrType}" defined in class "${this.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string or numbers.`)
-      }
-    }
   }
 
   /**
