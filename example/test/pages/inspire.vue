@@ -16,6 +16,7 @@
 <script>
 
 import Teste from '~/models/teste.model'
+import { Model } from '@agtm/nuxt-model'
 
 export default {
 
@@ -28,22 +29,27 @@ export default {
   async mounted () {
     await this.$nextTick()
 
-    this.teste = await Teste.create({
+    this.teste = await Model.createFromData({
+      __typename: 'Teste',
       id: 1,
+      valor: 23,
       nascimento: '2020-01-01',
       name: {
         id: 2,
+        __typename: 'SubTeste',
         name: [{
           id: 3,
-          __typename: 'teste'
+          __typename: 'Teste'
         }, {
-          id: 4
+          id: 4,
+          __typename: 'Teste'
         }]
       }
     })
 
-    this.teste.name.name.mpush({
-      id: 5
+    this.teste.name.name.push({
+      id: 5,
+      __typename: 'Teste'
     })
 
     this.teste.pais = 'Argentina'
@@ -58,10 +64,13 @@ export default {
 
       this.teste.id++
       this.teste.name.name.push({
-        id: 5
+        id: 5,
+        __typename: 'Teste'
       })
-
       this.teste.nao_existe = 123
+
+      console.log('FINAL', '= ', this.teste)
+      console.log('FINAL JSON', this.teste.toJSON())
 
     }
 

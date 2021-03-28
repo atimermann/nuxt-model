@@ -8,7 +8,7 @@
  *
  */
 
-import { camelCase, isPlainObject, kebabCase, snakeCase } from 'lodash'
+import { camelCase, cloneDeep, isPlainObject, kebabCase, snakeCase } from 'lodash'
 
 import PrimitiveType from './types/primitive.type'
 import DateType from './types/date.type'
@@ -22,7 +22,7 @@ export default class Model {
    *
    * @type {string}
    */
-  static className = '__BASE__'
+  static className = 'Model'
 
   /**
    * Usado para identificar que a classe do usuário é uma subclase de Model (nunca deve ser alterada nas subclasses)
@@ -141,6 +141,7 @@ export default class Model {
     Model.loadTypeModule = options.loadTypeModuleFunction
     Model.enableConstructorName = options.enableConstructorName
     Model.fileCaseStyle = options.fileCaseStyle
+    Model.typeValidation = options.typeValidation
 
     // Context Attributes. Ref: https://nuxtjs.org/docs/2.x/internals-glossary/context
     Model.context = options.context
@@ -162,6 +163,32 @@ export default class Model {
 
   /**
    * Factory para criar nova instancia de um Model.
+   * Deve ser inicializado por um JSON de dado
+   *
+   * A classe é importada automaticamente de acordo com o tipo definido em data
+   *
+   * @param {object} data  Dados no formato Json para ser povoar a instancaia
+   *
+   * @return {Promise<Model>}
+   */
+  static createFromData (data) {
+
+    if (!Model.typeValidation) {
+      throw new Error('To use this method, "typeValidation" must be configured in options')
+    }
+
+    if (this.getClassName() !== 'Model') {
+      throw new Error('This method must be called from the parent class Model')
+    }
+
+    const Class = Model.loadModelModule(this._formatFileName(data[Model.typeValidation]))
+
+    return Class.create(data)
+
+  }
+
+  /**
+   * Factory para criar nova instancia de um Model.
    * Deve ser inicializado por um JSON de dados
    *
    * @param {object} data  Dados no formato Json para ser povoar a instancaia
@@ -173,16 +200,39 @@ export default class Model {
     const Class = this
     const instance = new Class()
 
+    if (!Class._modelClass) {
+      throw new Error(`Class "${attrType}" must be instance of Model.`)
+    }
+
+    if (this.getClassName() === 'Model') {
+      throw new Error('This method should not be called from the parent class Model.')
+    }
+
+    if (Model.typeValidation) {
+
+      if (!data[Model.typeValidation]) {
+        throw new Error(`Attribute "${Model.typeValidation}" is required in "${this.getClassName()}"`)
+      }
+
+      if (this.getClassName() !== `${data[Model.typeValidation]}Model`) {
+        throw new Error(`Model not compatible with data: ("${this.getClassName().substring(0, this.getClassName().length - 5)}" <> "${data[Model.typeValidation]}")`)
+      }
+    }
+
     // Cria Objeto
     for (const classAttribute of Object.getOwnPropertyNames(Class)) {
 
       if (classAttribute.substr(-4) === 'Type') {
 
         const attrName = classAttribute.substring(0, classAttribute.length - 4)
-        const attrType = Class[classAttribute]
         const attrInitialValue = instance[attrName]
 
         delete instance[attrName]
+
+        let attrType = Class[classAttribute]
+        if (typeof attrType === 'object') {
+          attrType = attrType.type
+        }
 
         if (attrType.substr(-2) === '[]') {
           ArrayType.setup(instance, attrName, attrType)
@@ -195,7 +245,7 @@ export default class Model {
         } else {
           const TypeClass = Model.loadTypeModule(this._formatFileName(attrType))
           if (!TypeClass) {
-            // TODO: nunca via chegar aqui, pois dá erro ao carregar modulo q não existe, talvez criar um try catch
+            // TODO: nunca vai chegar aqui, pois dá erro ao carregar modulo q não existe, talvez criar um try catch
             throw new Error(`Type "${attrType}" defined in class "${Class.getClassName()}" is invalid. Must be a subclass of Model, custom type or primitive types such as boolean, string or numbers.`)
           }
           if (!TypeClass._modelTypeClass) {
@@ -360,16 +410,82 @@ export default class Model {
       throw new TypeError(`Attribute "${attrName}" in class "${this.getClassName()}" must be an array.`)
     }
 
-    const collection = []
+    // Cria um array modificado. modifica push para instanciar modelo automaticamente
+    // precisamos clonar para não afetar o objeto Array original do javascript
+    const collection = cloneDeep([])
+
+    collection.push = function () {
+      const newArguments = []
+      for (const argument of arguments) {
+        newArguments.push(Model.createAttributeValue(instance, attrType, attrName, argument))
+      }
+      return Array.prototype.push.apply(collection, newArguments)
+    }
+
+    // TODO: reescrever os seguintes métodos do array
+    // arr.pop = function () {
+    //   var popped = Array.prototype.pop.apply(arr, arguments)
+    //   for (var i = 0; i < _this.observers.length; i++) {
+    //     _this.observers[i](popped, 'pop')
+    //   }
+    //   return popped
+    // }
+    //
+    // arr.reverse = function () {
+    //   var result = Array.prototype.reverse.apply(arr, arguments)
+    //   for (var i = 0; i < _this.observers.length; i++) {
+    //     _this.observers[i](result, 'reverse')
+    //   }
+    //   return result
+    // }
+    //
+    // arr.shift = function () {
+    //   var deleted_item = Array.prototype.shift.apply(arr, arguments)
+    //   for (var i = 0; i < _this.observers.length; i++) {
+    //     _this.observers[i](deleted_item, 'shift')
+    //   }
+    //   return deleted_item
+    // }
+    //
+    // arr.sort = function () {
+    //   var result = Array.prototype.sort.apply(arr, arguments)
+    //   for (var i = 0; i < _this.observers.length; i++) {
+    //     _this.observers[i](result, 'sort')
+    //   }
+    //   return result
+    // }
+    //
+    // arr.splice = function (i, length, itemsToInsert) {
+    //   var returnObj
+    //   if (itemsToInsert) {
+    //     Array.prototype.slice.call(arguments, 2)
+    //     returnObj = itemsToInsert
+    //   } else {
+    //     returnObj = Array.prototype.splice.apply(arr, arguments)
+    //   }
+    //   for (var i = 0; i < _this.observers.length; i++) {
+    //     _this.observers[i](returnObj, 'splice')
+    //   }
+    //   return returnObj
+    // }
+    //
+    // arr.unshift = function () {
+    //   var new_length = Array.prototype.unshift.apply(arr, arguments)
+    //   for (var i = 0; i < _this.observers.length; i++) {
+    //     _this.observers[i](new_length, 'unshift')
+    //   }
+    //   return arguments
+    // }
+
     for (const value of values) {
-      collection.push(this.createAttributeValue(instance, attrType, attrName, value))
+      collection.push(value)
     }
     return collection
   }
 
   /**
    * Processa um valor, verificando o tipo relacioado a ele. se for instancia de model,t ransforma objeto em uma
-   * instnacia de model, se for Date converte stringe em objeto Date, caso contrário apenas retorna valor
+   * instancia de model, se for Date converte stringe em objeto Date, caso contrário apenas retorna valor
    *
    * Usado para criaação de coleção ou atributos do tipo array
    *
@@ -383,21 +499,25 @@ export default class Model {
   static createAttributeValue (instance, attrType, attrName, value) {
 
     if (attrType.substr(-5) === 'Model') {
-      return this._createSubModelAttribute(instance, attrType, attrName, value)
+      // Já está instanciado
+      return value.constructor._modelClass
+        ? value
+        : this._createSubModelAttribute(instance, attrType, attrName, value)
+
     } else if (attrType === 'date') {
 
       if (value instanceof Date) {
-        instance.__rawValues[attrName] = value
+        return value
       } else if (typeof (value) === 'string') {
-        instance.__rawValues[attrName] = new Date(value)
+        return new Date(value)
       } else {
         throw new TypeError(`Attribute "${attrName}"(${value}) must be instance of Date or type "string", get "${typeof (value)}"`)
       }
 
-    } else if (['boolean', 'number', 'string'].includes(attrType)) {
+    } else if (['boolean', 'number', 'string', 'bigint', 'symbol'].includes(attrType)) {
       return value
     } else {
-      throw new Error(`Type "${attrType}" defined in class "${this.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string or numbers.`)
+      throw new Error(`Type "${attrType}" defined in class "${this.getClassName()}" is invalid. Must be a subclass of Model name or primitive types such as boolean, string, numbers, bigint or symbol.`)
     }
 
   }

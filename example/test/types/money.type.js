@@ -13,19 +13,21 @@
 import { cloneDeep } from 'lodash'
 import { ModelType } from '@agtm/nuxt-model'
 
-export default class I18nType extends ModelType {
-
+export default class MoneyType extends ModelType {
 
   static setup (instance, attrName, attrType) {
 
     Object.defineProperty(instance, attrName, {
       get () {
 
-        console.log('GETTER', instance.constructor.app)
-        return 'Japão'
+        if (instance.__rawValues[attrName] !== undefined){
+          return 'R$ ' + instance.__rawValues[attrName].toFixed(2)
+        }
+
         // return instance.__rawValues[attrName]
       },
       set (value) {
+
         instance.__rawValues[attrName] = cloneDeep(value)
       }
     })

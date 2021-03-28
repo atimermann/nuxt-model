@@ -9,7 +9,7 @@
  */
 'use strict'
 
-import Model from '@agtm/nuxt-model'
+import { Model } from '@agtm/nuxt-model'
 
 export default (context) => {
   const loadModelModuleFunction = function (modelName) {
@@ -31,6 +31,7 @@ export default (context) => {
     loadModelModuleFunction,
     loadTypeModuleFunction,
     enableConstructorName: <%= options.enableConstructorName %>,
-    fileCaseStyle: '<%= options.fileCaseStyle %>'
+    fileCaseStyle: '<%= options.fileCaseStyle %>',
+    typeValidation: '<%= options.typeValidation %>',
   })
 }

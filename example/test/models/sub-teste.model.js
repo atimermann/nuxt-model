@@ -8,7 +8,7 @@
 
 'use strict'
 
-import Model from '@agtm/nuxt-model'
+import { Model } from '@agtm/nuxt-model'
 
 export default class SubTesteModel extends Model {
   static nameType = 'TesteModel[]'
