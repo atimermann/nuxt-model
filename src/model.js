@@ -132,6 +132,12 @@ export default class Model {
   __parent = null
 
   /**
+   * Lista de observadores cadastro neste model
+   * @type {[]}
+   */
+  __observers = []
+
+  /**
    * Configurção da classe, usado na inicialização do nuxt
    * @param options
    */
@@ -337,6 +343,21 @@ export default class Model {
 
   }
 
+  onChange (observer) {
+    this.__observers.push(observer)
+
+    // Adiciona Observers aos submodels
+    for (const attrName of Object.getOwnPropertyNames(this)) {
+      if (attrName.substr(0, 1) !== '_') {
+        const attrValue = this[attrName]
+        if (attrValue && attrValue.constructor._modelClass) {
+          attrValue.onChange(observer)
+        }
+      }
+    }
+
+  }
+
   /**
    * Retorna Objeto JSON deste model
    * Utilize setValues para definir valores
@@ -419,10 +440,12 @@ export default class Model {
       for (const argument of arguments) {
         newArguments.push(Model.createAttributeValue(instance, attrType, attrName, argument))
       }
+      instance._callObservers(attrName, newArguments)
       return Array.prototype.push.apply(collection, newArguments)
     }
 
-    // TODO: reescrever os seguintes métodos do array
+    // TODO: reescrever os seguintes métodos do array IMPORTANTE: adicionar instance._callObservers(attrName, value)
+    //  em todos os métodos
     // arr.pop = function () {
     //   var popped = Array.prototype.pop.apply(arr, arguments)
     //   for (var i = 0; i < _this.observers.length; i++) {
@@ -542,6 +565,11 @@ export default class Model {
 
     const subClassInstance = Class.create(value)
 
+    // Configura observers no subModel
+    for (const observer of instance.__observers) {
+      subClassInstance.onChange(observer)
+    }
+
     // Vincula com pai
     Object.defineProperty(subClassInstance, '__parent', {
       enumerable: false,
@@ -594,6 +622,12 @@ export default class Model {
 
     return styles[this.fileCaseStyle]()
 
+  }
+
+  _callObservers (attrName, value) {
+    for (const observer of this.__observers) {
+      observer(attrName, value)
+    }
   }
 
 }

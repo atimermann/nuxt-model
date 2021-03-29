@@ -27,8 +27,8 @@ export default class MoneyType extends ModelType {
         // return instance.__rawValues[attrName]
       },
       set (value) {
-
         instance.__rawValues[attrName] = cloneDeep(value)
+        instance._callObservers(attrName, value)
       }
     })
   }

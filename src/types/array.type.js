@@ -23,6 +23,7 @@ export default class Array extends ModelType {
       },
       set (value) {
         instance.__rawValues[attrName] = Model.createCollectionAttributeValue(instance, attrType, attrName, value)
+        instance._callObservers(attrName, value)
       }
     })
 

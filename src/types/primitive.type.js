@@ -28,6 +28,7 @@ export default class PrimitiveType extends ModelType {
         }
 
         instance.__rawValues[attrName] = cloneDeep(value)
+        instance._callObservers(attrName, value)
       }
     })
   }

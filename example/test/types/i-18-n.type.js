@@ -27,6 +27,7 @@ export default class I18nType extends ModelType {
       },
       set (value) {
         instance.__rawValues[attrName] = cloneDeep(value)
+        instance._callObservers(attrName, value)
       }
     })
   }

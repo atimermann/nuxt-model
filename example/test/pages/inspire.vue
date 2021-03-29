@@ -57,6 +57,12 @@ export default {
 
     console.log('FINAL', '= ', this.teste)
     console.log('FINAL JSON', this.teste.toJSON())
+
+    // Cadastra observers
+
+    this.teste.onChange(function(attrName, value){
+      console.log('ON CHANGE:', attrName, value)
+    })
   },
 
   methods: {

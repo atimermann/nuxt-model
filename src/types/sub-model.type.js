@@ -1,7 +1,7 @@
 /**
  * **Created on 23/03/2021**
  *
- * <File Reference Aqui: sub-model>
+ * src/types/sub-model.type.js
  * @author André Timermann <andre@timermann.com.br>
  *
  */
@@ -21,6 +21,7 @@ export default class SubModelType extends ModelType {
       },
       set (value) {
         instance.__rawValues[attrName] = Model._createSubModelAttribute(instance, attrType, attrName, value)
+        instance._callObservers(attrName, value)
       }
     })
 

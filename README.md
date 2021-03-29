@@ -6,7 +6,7 @@ classes.
 Este módulo permite criar objetos (instancia de classes) a partir de dados no formato JSON simples com todos os
 relacionamentos automaticamente.
 
-# Caractéristicas
+# Caracteristicas
 
 * Criação de models de dado similar ao utilizado em ORMs no backend
 * Suporta relacionamento um-para-um e um-para-muitos
@@ -172,7 +172,8 @@ export default class AlunoModel extends Model {
 
 * Os atributos do model são atributos de classe, portando teve ser definidos como estático
 * Todo o nome de atributo deve ser sufixado com "Type"
-* Os tipos permitidos são: 'string', 'number', 'boolean', 'data', um tipo customizado, um model ou array dos tipos anteriroes.
+* Os tipos permitidos são: 'string', 'number', 'boolean', 'data', um tipo customizado, um model ou array dos tipos
+  anteriroes.
 * Para tipos simples devem ser definidos com texto em 'string', não utilizar os tipos do javascript.
 
 **IMPORTANTE:**  Nome de atributos que iniciam com _ são ignorados
@@ -220,8 +221,16 @@ export default class TesteModel extends Model {
   get nomeCompleto () {
     return `${this.name} ${this.sobrenome}`
   }
+
+  set apelido (value) {
+    this._callObservers('apelido', value)
+  }
 }
 ```
+
+**IMPORTANTE:** Sempre que criar um 'Setter', necessário chamar o método this.__callObservers(NOME_DO_ATRIBUTO,
+NOVO_VALOR)
+para que o evento onChange funcione para este setter
 
 # Tipos
 
@@ -363,6 +372,7 @@ export default class MoneyType extends ModelType {
       },
       set (value) {
         instance.__rawValues[attrName] = cloneDeep(value)
+        instance.__callObservers(attrName, value)
       }
     })
   }
@@ -389,7 +399,10 @@ O método setup recebe três parâmetros:
 
 Veja que o método setup é bastante livre para fazemos qualquer manipulação que quisermos.
 
-### _rawValues e Object.defineProperty
+**IMPORTANTE:** Necessário chamar o método instance.__callObservers(NOME_DO_ATRIBUTO, NOVO_VALOR) no set para que o
+evento onChange funcione para este tipo,
+
+### __rawValues e Object.defineProperty
 
 Aqui é importante entender o funcionamento interno de um model, todos os valores não são armazenados por padrão no
 atributo da instancia e sim dentro de um objeto chamado "__rawValues".
@@ -503,8 +516,11 @@ Porém, se atribuir diretamente:
 this.teste.pais = 'Argentina'
 ```
 
+**IMPORTANTE:**
 Nenhum erro será disparado, porém o atributo será ignorado por métodos como toJSON e toString ou poderá ser exluído a
 qualquer momento. Portando nunca utilize um atributo não definido no model.
+
+Observers também não funcionarão para atributos não definidos.
 
 Isso ocorre porque no javascript não é possível criar getters e setters genericos, impossibilidando a validação.
 
@@ -540,7 +556,7 @@ Model.createFromData(data)
 
 Útil quando não sabemos qual Model será enviado pelo backend.
 
-# Atributos Customizados
+# Atributos estendidos
 
 Podemos adicionar outras propriedades aos atriburos do Model (por exemplo para criação de um formulário).
 
@@ -556,8 +572,8 @@ import { Model } from '@agtm/nuxt-model'
 
 export default class TesteModel extends Model {
   static nameType = {
-    type: 'SubTesteModel', 
-    required: true 
+    type: 'SubTesteModel',
+    required: true
   }
 }
 ```
@@ -568,6 +584,19 @@ Note que é um atributo de classe, na instância terá q acessar da seguinte for
   console.log(meu_model.constructor.nameType.required)
 
 ```
+
+# Evento OnChange (Observers)
+
+Podemos criar um evento que será chamado sempre que alguma alteração ocorrer no Model, veja o exemplo:
+
+```javascript
+this.aluno = await Aluno.create({name: 'João'})
+this.aluno.onChange(function (attrName, value) {
+  console.log('ON CHANGE:', attrName, value)
+})
+```
+
+**NOTA:** Só é possivel criar eventos, não é possível remove-los, tome cuidado.
 
 # Rêferencia
 

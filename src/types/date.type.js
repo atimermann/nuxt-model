@@ -27,6 +27,8 @@ export default class Date extends ModelType{
         } else {
           throw new TypeError(`Attribute "${attrName}"(${value}) must be instance of Date or type "string", get "${typeof (value)}"`)
         }
+
+        instance._callObservers(attrName, value)
       }
     })
 
