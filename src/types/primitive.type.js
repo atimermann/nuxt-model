@@ -15,7 +15,6 @@ import ModelType from '../model-type'
 
 export default class PrimitiveType extends ModelType {
 
-
   static setup (instance, attrName, attrType) {
     Object.defineProperty(instance, attrName, {
       get () {
@@ -23,7 +22,7 @@ export default class PrimitiveType extends ModelType {
       },
       set (value) {
 
-        if (typeof (value) !== attrType) {
+        if (value !== undefined && value !== null && typeof (value) !== attrType) {
           throw new TypeError(`Attribute "${attrName}"(${value}) must be of type "${attrType}", get "${typeof (value)}"`)
         }
 

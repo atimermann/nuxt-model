@@ -166,13 +166,13 @@ export default class AlunoModel extends Model {
   static idadeType = 'number'
   static matriculadoType = 'boolean'
   static turmaType = 'turmaModel'
-  static nascimentoType = 'data'
+  static nascimentoType = 'date'
 }
 ```
 
 * Os atributos do model são atributos de classe, portando teve ser definidos como estático
 * Todo o nome de atributo deve ser sufixado com "Type"
-* Os tipos permitidos são: 'string', 'number', 'boolean', 'data', um tipo customizado, um model ou array dos tipos
+* Os tipos permitidos são: 'string', 'number', 'boolean', 'date', um tipo customizado, um model ou array dos tipos
   anteriroes.
 * Para tipos simples devem ser definidos com texto em 'string', não utilizar os tipos do javascript.
 
