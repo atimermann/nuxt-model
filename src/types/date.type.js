@@ -12,25 +12,29 @@
 
 import ModelType from '../model-type'
 
-export default class Date extends ModelType{
+export default class Date extends ModelType {
 
-  static setup ( instance, attrName) {
+  static setup (instance, attrName) {
     Object.defineProperty(instance, attrName, {
-      get () {
-        return instance.__rawValues[attrName]
-      },
-      set (value) {
-        if (value instanceof Date) {
-          instance.__rawValues[attrName] = value
-        } else if (typeof (value) === 'string') {
-          instance.__rawValues[attrName] = new Date(value)
-        } else {
-          throw new TypeError(`Attribute "${attrName}"(${value}) must be instance of Date or type "string", get "${typeof (value)}"`)
-        }
+        get () {
+          return instance.__rawValues[attrName]
+        },
+        set (value) {
 
-        instance._callObservers(attrName, value)
+          if (!value) {
+            instance.__rawValues[attrName] = null
+          } else if (value instanceof Date) {
+            instance.__rawValues[attrName] = value
+          } else if (typeof (value) === 'string') {
+            instance.__rawValues[attrName] = new Date(value)
+          } else {
+            throw new TypeError(`Attribute "${attrName}"(${value}) must be instance of Date or type "string", get "${typeof (value)}"`)
+          }
+
+          instance._callObservers(attrName, value)
+        }
       }
-    })
+    )
 
   }
 

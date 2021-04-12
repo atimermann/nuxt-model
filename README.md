@@ -615,3 +615,12 @@ Ao configurar o modulo no projeto, podemos definir as seguintes opções:
 Table Editor: https://www.tablesgenerator.com/markdown_tables
 
 https://dev.to/bawa_geek/how-to-setup-jest-testing-in-nuxt-js-project-5c84
+
+
+## Issues
+
+* Nuxt Model não é reativo no Vue, pesquisar uma solução, por enquanto utilizar:
+  * [model].onChange(() => this.$forceUpdate())
+  * Tomar cuidado com performance, testar com formulário grande
+
+* setValues, onChange, pode dar conflitos, usar $setValues, $onChange, $toJson
